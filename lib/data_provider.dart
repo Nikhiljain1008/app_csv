@@ -56,19 +56,20 @@ class DataProvider with ChangeNotifier {
 
   List<DateTime> getTimeSeries() {
     final List<DateTime> dateTimeSeries = [];
-    final dateFormat = DateFormat('HH:mm, M/d/yyyy'); // Corrected format
+    final dateFormat = DateFormat('HH:mm, d/M/yyyy'); // Corrected format
 
     for (var row in _data) {
       try {
         String time = row[0].trim(); // Time in HH:mm
         String date = row[1].trim(); // Date in M/d/yyyy
-        print('Parsing time: $time, date: $date');
+        //print('Parsing time: $time, date: $date');
         DateTime dateTime = dateFormat.parse('$time, $date');
         dateTimeSeries.add(dateTime);
       } catch (e) {
         print('Error parsing data at row ${_data.indexOf(row)}: $e');
       }
     }
+    print("successful first function");
     return dateTimeSeries;
   }
 
@@ -76,21 +77,27 @@ class DataProvider with ChangeNotifier {
     final dateTimeSeries = getTimeSeries();
     final List<ChartData> chartData = [];
 
+    print('DateTime Series: $dateTimeSeries');
+    print('Start: $_startDateTime, End: $_endDateTime');
+
     for (int i = 0; i < dateTimeSeries.length; i++) {
+      final dateTime = dateTimeSeries[i];
       if (_startDateTime != null &&
           _endDateTime != null &&
-          dateTimeSeries[i].isAfter(_startDateTime!) &&
-          dateTimeSeries[i].isBefore(_endDateTime!)) {
+          (dateTime.isAfter(_startDateTime!) ||
+              dateTime.isAtSameMomentAs(_startDateTime!)) &&
+          (dateTime.isBefore(_endDateTime!) ||
+              dateTime.isAtSameMomentAs(_endDateTime!))) {
         try {
           double value =
               double.parse(_data[i][_columns.indexOf(column)].toString());
-          chartData.add(ChartData(dateTimeSeries[i], value));
+          chartData.add(ChartData(dateTime, value));
         } catch (e) {
           print('Error parsing value at row $i: $e');
         }
       }
     }
-    print(chartData);
+    print('Filtered Chart Data: $chartData');
     return chartData;
   }
 }
