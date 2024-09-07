@@ -39,6 +39,10 @@ dependencies:
   csv: ^6.0.0
   fl_chart: ^0.68.0
   flutter_blue:
+  provider: ^6.1.2
+  syncfusion_flutter_charts: ^25.1.42
+  syncfusion_flutter_core: ^25.1.42
+  intl: ^0.19.0
 
 dev_dependencies:
   flutter_test:
@@ -64,7 +68,7 @@ flutter:
 
   # To add assets to your application, add an assets section, like this:
   assets:
-    - assets/data2.csv
+    - assets/cleaned_data.csv
 
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/assets-and-images/#resolution-aware
