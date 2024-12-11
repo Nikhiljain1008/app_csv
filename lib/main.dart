@@ -1,3 +1,4 @@
+import 'package:app_csv/bluetooth.dart';
 import 'package:app_csv/chartdisplaypage.dart';
 import 'package:app_csv/columnselectionpage.dart';
 import 'package:flutter/material.dart';
@@ -22,8 +23,9 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       debugShowCheckedModeBanner: false,
       theme: ThemeData.dark(),
-      initialRoute: '/average',
+      initialRoute: '/bluetooth',
       routes: {
+        '/bluetooth': (context) => const FlutterBlueApp(),
         '/average': (context) => const AverageCalculationPage(),
         '/charts': (context) => SelectionPage(),
         '/chartPage': (context) => ChartPage(),
