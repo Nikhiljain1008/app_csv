@@ -44,6 +44,7 @@ dependencies:
   syncfusion_flutter_core: ^25.1.42
   intl: ^0.19.0
   permission_handler: ^11.3.1
+  bluetooth_low_energy: ^6.0.2
 
 dev_dependencies:
   flutter_test:

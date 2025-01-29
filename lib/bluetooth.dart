@@ -26,6 +26,7 @@ class _FlutterBlueAppState extends State<FlutterBlueApp> {
         _adapterState = state;
       });
     });
+    _checkPermissionsAndServices();
   }
 
   @override
@@ -37,7 +38,54 @@ class _FlutterBlueAppState extends State<FlutterBlueApp> {
     super.dispose();
   }
 
+  Future<void> _checkPermissionsAndServices() async {
+    // Check Bluetooth permissions
+    if (await Permission.bluetooth.isDenied ||
+        await Permission.bluetoothScan.isDenied ||
+        await Permission.bluetoothConnect.isDenied) {
+      await Permission.bluetooth.request();
+      await Permission.bluetoothScan.request();
+      await Permission.bluetoothConnect.request();
+    }
+
+    // Check location permissions
+    if (await Permission.location.isDenied) {
+      await Permission.location.request();
+    }
+
+    // Check if location services are enabled
+    if (!(await Permission.location.serviceStatus.isEnabled)) {
+      _showEnableLocationDialog();
+    }
+  }
+
+  void _showEnableLocationDialog() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text('Enable Location Services'),
+        content: const Text(
+            'Location services must be enabled to scan for Bluetooth devices.'),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(context).pop(),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () async {
+              await openAppSettings();
+              Navigator.of(context).pop();
+            },
+            child: const Text('Enable'),
+          ),
+        ],
+      ),
+    );
+  }
+
   Future<void> _startScan() async {
+    await _checkPermissionsAndServices();
+
     if (_isScanning) return;
 
     setState(() {
@@ -46,7 +94,7 @@ class _FlutterBlueAppState extends State<FlutterBlueApp> {
     });
 
     await FlutterBluePlus.startScan(
-      timeout: Duration(seconds: 15),
+      timeout: const Duration(seconds: 15),
     );
 
     FlutterBluePlus.onScanResults.listen((results) {
@@ -61,7 +109,7 @@ class _FlutterBlueAppState extends State<FlutterBlueApp> {
     }, onError: (e) => print("Scan Error: $e"));
 
     // Stop scanning after a delay if not already stopped
-    await Future.delayed(Duration(seconds: 15));
+    await Future.delayed(const Duration(seconds: 15));
     if (_isScanning) {
       _stopScan();
     }
@@ -98,7 +146,7 @@ class _FlutterBlueAppState extends State<FlutterBlueApp> {
     return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
-        children: const [
+        children: [
           Icon(Icons.bluetooth_disabled, size: 100, color: Colors.grey),
           SizedBox(height: 20),
           Text(
@@ -106,6 +154,13 @@ class _FlutterBlueAppState extends State<FlutterBlueApp> {
             style: TextStyle(fontSize: 18),
           ),
           Text('Please turn on Bluetooth to scan for devices.'),
+          const SizedBox(height: 20),
+          ElevatedButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/average');
+            },
+            child: const Text("Go to average calculation"),
+          ),
         ],
       ),
     );
@@ -141,18 +196,20 @@ class _FlutterBlueAppState extends State<FlutterBlueApp> {
                   },
                 ),
         ),
-        ElevatedButton(
-          onPressed: () {
-            Navigator.pushNamed(context, '/average');
-          },
-          child: const Text("Go to avarage calculation"),
-        )
+        Padding(
+          padding: const EdgeInsets.all(16.0),
+          child: ElevatedButton(
+            onPressed: () {
+              Navigator.pushNamed(context, '/average');
+            },
+            child: const Text("Go to average calculation"),
+          ),
+        ),
       ],
     );
   }
 
   Future<void> _connectToDevice(BluetoothDevice device) async {
-    // Ensure that the Scaffold is available when trying to show SnackBar
     WidgetsBinding.instance.addPostFrameCallback((_) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Connecting to ${device.name}...')),
